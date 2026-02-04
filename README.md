@@ -69,6 +69,12 @@ The app uses this in `utils/db.mjs` to connect to the database. You need at leas
 
 Base URL: `http://localhost:4000`
 
+## Swagger API Documentation
+
+After starting the server, open Swagger UI at:
+
+- `http://localhost:4000/api-docs`
+
 ### Questions
 
 | Method | Endpoint | Description |
