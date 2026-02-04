@@ -11,7 +11,7 @@ This project is an Express.js server that provides CRUD operations for questions
 - Manage questions with title, description, and category (e.g. Software, Food, Travel, Science).
 - Add answers to questions (max 300 characters).
 - Search questions by title or category.
-- Vote on questions and answers (up/down with 1 or -1).
+- **Vote (เห็นด้วย/ไม่เห็นด้วย)** on questions and on answers: send `{ "vote": 1 }` (เห็นด้วย) or `{ "vote": -1 }` (ไม่เห็นด้วย). The total vote count can be positive or negative and is returned as `vote_count` when you get questions or answers.
 - Deleting a question also removes all its answers.
 
 **Tech stack:** Node.js, Express, PostgreSQL (with `pg`), dotenv.
@@ -74,9 +74,9 @@ Base URL: `http://localhost:4000`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/questions` | Create a question. Body: `{ "title", "description", "category" }`. |
-| GET | `/questions` | Get all questions. |
-| GET | `/questions/search?title=...&category=...` | Search by title and/or category (at least one required). |
-| GET | `/questions/:questionId` | Get one question by ID. |
+| GET | `/questions` | Get all questions (each includes `vote_count`: sum of votes, + or -). |
+| GET | `/questions/search?title=...&category=...` | Search by title and/or category (at least one required; results include `vote_count`). |
+| GET | `/questions/:questionId` | Get one question by ID (includes `vote_count`). |
 | PUT | `/questions/:questionId` | Update a question. Body: `{ "title", "description", "category" }`. |
 | DELETE | `/questions/:questionId` | Delete a question (and all its answers). |
 | POST | `/questions/:questionId/vote` | Vote on a question. Body: `{ "vote": 1 }` or `{ "vote": -1 }`. |
@@ -86,7 +86,7 @@ Base URL: `http://localhost:4000`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/questions/:questionId/answers` | Add an answer. Body: `{ "content": "..." }` (max 300 characters). |
-| GET | `/questions/:questionId/answers` | Get all answers for a question. |
+| GET | `/questions/:questionId/answers` | Get all answers for a question (each includes `vote_count`: + or -). |
 | DELETE | `/questions/:questionId/answers` | Delete all answers for that question. |
 | POST | `/answers/:answerId/vote` | Vote on an answer. Body: `{ "vote": 1 }` or `{ "vote": -1 }`. |
 

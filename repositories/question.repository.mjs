@@ -9,18 +9,28 @@ export const createQuestion = async (questionBody) => {
   return result.rows[0];
 };
 
-// Get all questions
+// Get all questions (with vote count: sum of question_votes, can be + or -)
 export const getQuestions = async () => {
-  const query = `SELECT * FROM questions`;
+  const query = `
+    SELECT q.*, COALESCE(SUM(qv.vote), 0)::int AS vote_count
+    FROM questions q
+    LEFT JOIN question_votes qv ON q.id = qv.question_id
+    GROUP BY q.id
+  `;
   const result = await pool.query(query);
   return result.rows;
 };
 
-// Get a question by id
+// Get a question by id (with vote count)
 export const getQuestionById = async (id) => {
-  const query = `SELECT * FROM questions WHERE id = $1`;
-  const value = [id];
-  const result = await pool.query(query, value);
+  const query = `
+    SELECT q.*, COALESCE(SUM(qv.vote), 0)::int AS vote_count
+    FROM questions q
+    LEFT JOIN question_votes qv ON q.id = qv.question_id
+    WHERE q.id = $1
+    GROUP BY q.id
+  `;
+  const result = await pool.query(query, [id]);
   return result.rows[0];
 };
 
@@ -48,13 +58,31 @@ export const getQuestionByTitleOrCategory = async (title, category) => {
   let query;
   let values;
   if (hasTitle && hasCategory) {
-    query = `SELECT * FROM questions WHERE title = $1 OR category = $2`;
+    query = `
+      SELECT q.*, COALESCE(SUM(qv.vote), 0)::int AS vote_count
+      FROM questions q
+      LEFT JOIN question_votes qv ON q.id = qv.question_id
+      WHERE q.title = $1 OR q.category = $2
+      GROUP BY q.id
+    `;
     values = [String(title).trim(), String(category).trim()];
   } else if (hasTitle) {
-    query = `SELECT * FROM questions WHERE title = $1`;
+    query = `
+      SELECT q.*, COALESCE(SUM(qv.vote), 0)::int AS vote_count
+      FROM questions q
+      LEFT JOIN question_votes qv ON q.id = qv.question_id
+      WHERE q.title = $1
+      GROUP BY q.id
+    `;
     values = [String(title).trim()];
   } else if (hasCategory) {
-    query = `SELECT * FROM questions WHERE category = $1`;
+    query = `
+      SELECT q.*, COALESCE(SUM(qv.vote), 0)::int AS vote_count
+      FROM questions q
+      LEFT JOIN question_votes qv ON q.id = qv.question_id
+      WHERE q.category = $1
+      GROUP BY q.id
+    `;
     values = [String(category).trim()];
   } else {
     return [];
@@ -72,11 +100,16 @@ export const postAnswerToQuestion = async (questionId, answerBody) => {
   return result.rows[0];
 };
 
-// get answers for a question
+// get answers for a question (with vote count per answer: + or -)
 export const getAnswersForQuestion = async (questionId) => {
-  const query = `SELECT * FROM answers WHERE question_id = $1`;
-  const value = [questionId];
-  const result = await pool.query(query, value);
+  const query = `
+    SELECT a.*, COALESCE(SUM(av.vote), 0)::int AS vote_count
+    FROM answers a
+    LEFT JOIN answer_votes av ON a.id = av.answer_id
+    WHERE a.question_id = $1
+    GROUP BY a.id
+  `;
+  const result = await pool.query(query, [questionId]);
   return result.rows;
 };
 
